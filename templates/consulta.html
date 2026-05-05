@@ -1,0 +1,80 @@
+{% extends "index.html" %}
+
+{% block content %}
+
+    <div class="container-fluid mt-5 px-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-primary">Registros de Fretes Salvos</h2>
+        </div>
+
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Manifesto</th>
+                            <th>Data Carreg.</th>
+                            <th>Motorista / Placa</th>
+                            <th>Tipo Frete</th>
+                            <th>Valor Frete</th>
+                            <th>Vale Comb.</th>
+                            <th>Frete PJ</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in registros %}
+                        <tr>
+                            <td class="fw-bold">{{ reg.manifesto_nr }}</td>
+                            <td>{{ reg.data_carregamento.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <div class="small fw-bold">{{ reg.motorista }}</div>
+                                <div class="text-muted small">{{ reg.placa }}</div>
+                            </td>
+                            <td>
+                                {% if reg.tem_km %}
+                                    <div class="badge badge-km text-dark mb-1">KM ({{ reg.km_qtd }})</div>
+                                {% endif %}
+
+                                {# Se não for KM, assume-se que é combinado #}
+                                {% if not reg.tem_km %}
+                                    <div class="badge badge-comb text-dark">Combinado</div>
+                                {% endif %}
+                            </td>
+                            <td class="text-success fw-bold">
+                                {% if reg.tem_km %}
+                                    R$ {{ "{:,.2f}".format(reg.km_qtd * reg.km_valor).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+                                {% else %}
+                                    R$ {{ "{:,.2f}".format(reg.combinado_valor).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+                                {% endif %}
+                            </td>
+                            <td class="text-danger">
+                                R$ {{ "{:,.2f}".format(reg.combustivel_valor).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+                            </td>
+                            <td class="fw-bold">
+                                R$ {{ "{:,.2f}".format(reg.frete_pj).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('editar_frete', manifesto_nr=reg.manifesto_nr) }}" 
+                                    class="btn btn-sm btn-outline-secondary" title="Editar">
+                                        Editar
+                                    </a>
+
+                                    <form action="{{ url_for('deletar_frete', manifesto_nr=reg.manifesto_nr) }}" 
+                                        method="POST" 
+                                        onsubmit="return confirm('Tem certeza que deseja apagar o manifesto {{ reg.manifesto_nr }}?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Apagar">
+                                            Apagar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
